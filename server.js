@@ -1,11 +1,35 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
+const NodeCache = require('node-cache');
 
 const app = express();
 app.use(bodyParser.json());
 
 const api_key = '7e3b0d29938664cd4b32b1484a711b4a';
+const cache = new NodeCache({ stdTTL:300 });
+
+const getWeatherData = async (url) => {
+  const cacheKey = url;
+  const cachedData = cache.get(cacheKey);
+
+  if (cachedData){
+    console.log('Cached data')
+    return cachedData;
+  }
+
+  console.log('New data from API');
+  try{
+    const response = await axios.get(url);
+    const weatherData = response.data;
+    cache.set(cacheKey, weatherData);
+    return weatherData;
+
+  }
+  catch (error) {
+    return res.status(500).json({ error: 'Error retrieving weather data' });
+  }
+}
 
 //current location
 app.get('/weather/current', async (req, res) => {
@@ -14,9 +38,11 @@ app.get('/weather/current', async (req, res) => {
     return res.status(400).json({ error: 'Location parameter is missing' });
   }
 
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${api_key}`;
+
   try {
-    const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${api_key}`);
-    const weatherData = response.data;
+    const weatherData = await getWeatherData(url);
+    //current weather data
     return res.json({
       provider: 'OpenWeatherMap',
       lastRefreshed: new Date(),
@@ -38,15 +64,18 @@ app.get('/weather/forecast', async (req, res) => {
     return res.status(400).json({ error: 'Location parameter is missing' });
   }
 
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${api_key}`;
+
+
   try {
-    const response = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=${api_key}`);
-    const forecastData = response.data;
+    const forecastData = await getWeatherData(url);
     const forecastList = forecastData.list.map(forecast => ({
       date: forecast.dt_txt, //gets date and time
       temperature: forecast.main.temp, //gets temp
       humidity: forecast.main.humidity, //gets humidity
       description: forecast.weather[0].description, //description of weather
     }));
+    //forecast data
     return res.json({
       provider: 'OpenWeatherMap',
       lastRefreshed: new Date(),
