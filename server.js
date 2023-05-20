@@ -7,7 +7,32 @@ const app = express();
 app.use(bodyParser.json());
 
 const api_key = '7e3b0d29938664cd4b32b1484a711b4a';
-const cache = new NodeCache({ stdTTL:300 });
+const cache = new NodeCache({ stdTTL: 480 });
+
+const validUsers = {
+  admin : 'admin',
+  user : 'user',
+}
+
+//function to check if user is authorised or not
+
+const Authentification = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Basic '))
+  return res.status(401).json({ error : 'Not authorised'})
+
+
+const encodedCredentials = authHeader.slice(6);
+const decodedCredentials = Buffer.from(encodedCredentials, 'base64').toString();
+const [username, password] = decodedCredentials.split(':')
+
+if (!validUsers.hasOwnProperty(username) || validUsers[username] !== password ){
+  return res.status(401).json({ error : 'Not authorised'});
+}
+
+next();
+};
 
 const getWeatherData = async (url) => {
   const cacheKey = url;
@@ -32,7 +57,7 @@ const getWeatherData = async (url) => {
 }
 
 //current location
-app.get('/weather/current', async (req, res) => {
+app.get('/weather/current', Authentification, async (req, res) => {
   const location = req.query.location;
   if (!location) {
     return res.status(400).json({ error: 'Location parameter is missing' });
@@ -58,13 +83,13 @@ app.get('/weather/current', async (req, res) => {
 });
 
 //forecast for location
-app.get('/weather/forecast', async (req, res) => {
+app.get('/weather/forecast', Authentification, async (req, res) => {
   const location = req.query.location;
   if (!location) {
     return res.status(400).json({ error: 'Location parameter is missing' });
   }
 
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${api_key}`;
+  const url = `https://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=${api_key}`;
 
 
   try {
@@ -82,14 +107,14 @@ app.get('/weather/forecast', async (req, res) => {
       data: forecastList,
     });
   } catch (error) {
-    return res.status(400).json({ error: 'Error retrieving weather data' });
+    return res.status(500).json({ error: 'Error retrieving weather data' });
   }
 });
 
 
 
 // history
-app.get('/weather/history', async (req, res) => {
+app.get('/weather/history', Authentification, async (req, res) => {
   const location = req.query.location;
   const startDate = req.query.start_date;
   const endDate = req.query.end_date;
