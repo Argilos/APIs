@@ -45,6 +45,9 @@ Endpoints:
     
 
 Replace 'api_key' with provided API from OpenWeatherMap!    
+
+RUN THIS CODE IN POSTMAN
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://god.gw.postman.com/run-collection/25029727-888b1274-0387-4da7-805a-6eeedd3e2f8a?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D25029727-888b1274-0387-4da7-805a-6eeedd3e2f8a%26entityType%3Dcollection%26workspaceId%3D534afe19-ce8f-40a1-81fb-1ff669cd8f33)
     
     
     
