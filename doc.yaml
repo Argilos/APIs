@@ -1,0 +1,123 @@
+openapi: 3.0.1
+info:
+  title: Weather API
+  version: 1.0.0
+servers:
+  - url: /
+paths:
+  /weather/current:
+    get:
+      summary: Get current weather data for a location
+      parameters:
+        - name: location
+          in: query
+          description: Location for which to retrieve weather data
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  provider:
+                    type: string
+                  lastRefreshed:
+                    type: string
+                    format: date-time
+                  data:
+                    type: object
+                    properties:
+                      temperature:
+                        type: number
+                      humidity:
+                        type: number
+                      description:
+                        type: string
+  /weather/forecast:
+    get:
+      summary: Get weather forecast for a location
+      parameters:
+        - name: location
+          in: query
+          description: Location for which to retrieve forecast data
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  provider:
+                    type: string
+                  lastRefreshed:
+                    type: string
+                    format: date-time
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date-time
+                        temperature:
+                          type: number
+                        humidity:
+                          type: number
+                        description:
+                          type: string
+  /weather/history:
+    get:
+      summary: Get historical weather data for a location within a date range
+      parameters:
+        - name: location
+          in: query
+          description: Location for which to retrieve historical weather data
+          required: true
+          schema:
+            type: string
+        - name: start_date
+          in: query
+          description: Start date for the historical weather data
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          description: End date for the historical weather data
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Successful response
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  provider:
+                    type: string
+                  lastRefreshed:
+                    type: string
+                    format: date-time
+                  data:
+                    type: object
+                    properties:
+                      temperature:
+                        type: number
+                      humidity:
+                        type: number
+                      description:
+                        type: string
+components: {}
